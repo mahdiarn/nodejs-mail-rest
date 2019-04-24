@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const Imap = require('imap');
 const inspect = require('util').inspect;
+const MailParser = require("mailparser").MailParser;
 const nodemailer = require('nodemailer')
 
 
@@ -21,6 +22,86 @@ app.get('/',(req,res) => {
 
 app.post('/', (req, res) => {
   return res.send('App is running\n');
+});
+
+app.post('/mail', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const seqnum = req.body.seqnum;
+  const imap = new Imap({
+      user: email,
+      password: password,
+      host: 'imap.gmail.com',
+      port: 993,
+      tls: true
+  });
+  let message = {};
+  const openInbox = (cb) => {
+    imap.openBox('INBOX', true, cb);
+  }
+  imap.once('ready', function() {     
+  
+    openInbox(function(err, box) {      
+        if (err) throw err;
+        var f = imap.seq.fetch(seqnum, {
+        bodies: ['HEADER.FIELDS (FROM TO SUBJECT DATE)', 'TEXT'],
+        struct: true
+        });
+        f.on('message', function(msg, seqno) {            
+            var prefix = '(#' + seqno + ') ';
+            var parser = new MailParser();
+            parser.on("headers", function(headers) {
+            });
+  
+            parser.on('data', data => {
+                if (data.type === 'text') {
+                    const text = data.text;
+                    message.text = text;
+                }
+            });
+            msg.on('body', function(stream, info) {
+                var buffer = '';
+                stream.on('data', function(chunk) {
+                  buffer += chunk.toString('UTF-8');
+                  parser.write(buffer);
+                });
+                stream.once('end', function() {
+                  if (info.which !== 'TEXT') {
+                    const seqnum = seqno;
+                    const from = Imap.parseHeader(buffer).from[0];
+                    const date = Imap.parseHeader(buffer).date[0];
+                    const subject = Imap.parseHeader(buffer).subject[0];
+                    message.seqnum = seqnum;
+                    message.from = from;
+                    message.date = date;
+                    message.subject = subject;
+                  }
+                });
+            });
+            msg.once('attributes', function(attrs) {
+            });
+            msg.once('end', function() {            
+              parser.end()            
+            });
+        });
+        f.once('error', function(err) {
+            return res.send('Error dalam pengambilan surel : ' + err);
+        });
+        f.once('end', function() {                
+            imap.end();          
+        });
+    });
+  });
+        
+  imap.once('error', function(err) {
+      return res.send('Error dalam pengambilan surel : ' + err);
+  });
+    
+  imap.once('end', function() {        
+    return res.send(message);
+  });
+    
+  imap.connect();  
 });
 
 app.post('/mails', (req, res) => {
