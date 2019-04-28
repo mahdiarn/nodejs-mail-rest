@@ -25,6 +25,7 @@ app.post('/', (req, res) => {
 });
 
 app.post('/mail', (req, res) => {
+  console.log('received POST mail')
   const email = req.body.email;
   const password = req.body.password;
   const seqnum = req.body.seqnum;
