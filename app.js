@@ -58,11 +58,10 @@ app.post('/mail', (req, res) => {
   
             parser.on('data', data => {
               console.log('parser on data callback');
-              console.log(data);
                 if (data.type === 'text') {
                     const text = data.text;
                     message.text = text;
-                    // console.log(message.text);
+                    console.log(typeof message.text);
                 }
                 console.log('parser on data callback end');
             });
