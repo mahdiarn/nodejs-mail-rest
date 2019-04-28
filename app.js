@@ -58,10 +58,11 @@ app.post('/mail', (req, res) => {
   
             parser.on('data', data => {
               console.log('parser on data callback');
+              console.log(data);
                 if (data.type === 'text') {
                     const text = data.text;
                     message.text = text;
-                    console.log(message.text);
+                    // console.log(message.text);
                 }
                 console.log('parser on data callback end');
             });
@@ -218,6 +219,7 @@ app.post('/sendmail', (req,res) => {
         to: to, // list of receivers
         subject: subject, // Subject line
         text: body, // plain text body
+        html: "<p>" + body + "</p>",
       }, (err,info) => {
         if (err)  {
           return res.send({statuscode : errcode});
