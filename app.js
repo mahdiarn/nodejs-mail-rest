@@ -61,7 +61,9 @@ app.post('/mail', (req, res) => {
                 if (data.type === 'text') {
                     const text = data.text;
                     message.text = text;
+                    console.log(message.text);
                 }
+                console.log('parser on data callback end');
             });
             msg.on('body', function(stream, info) {
               console.log('message on body callback');
