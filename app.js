@@ -102,6 +102,7 @@ app.post('/mail', (req, res) => {
         f.once('end', function() {                
           console.log('fetch on end callback');
             imap.end();          
+            console.log('fetch on end callback end');
         });
     });
   });
