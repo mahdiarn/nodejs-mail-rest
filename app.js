@@ -42,13 +42,15 @@ app.post('/mail', (req, res) => {
   }
   imap.once('ready', function() {     
   
-    openInbox(function(err, box) {      
+    openInbox(function(err, box) {
+      console.log('openInbox callback');
         if (err) throw err;
         var f = imap.seq.fetch(seqnum, {
         bodies: ['HEADER.FIELDS (FROM TO SUBJECT DATE)', 'TEXT'],
         struct: true
         });
         f.on('message', function(msg, seqno) {            
+          console.log('fetch on message callback');
             var prefix = '(#' + seqno + ') ';
             var parser = new MailParser();
             parser.on("headers", function(headers) {
@@ -90,6 +92,7 @@ app.post('/mail', (req, res) => {
             return res.send('Error dalam pengambilan surel : ' + err);
         });
         f.once('end', function() {                
+          console.log('fetch on end callback');
             imap.end();          
         });
     });
