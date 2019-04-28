@@ -57,18 +57,22 @@ app.post('/mail', (req, res) => {
             });
   
             parser.on('data', data => {
+              console.log('parser on data callback');
                 if (data.type === 'text') {
                     const text = data.text;
                     message.text = text;
                 }
             });
             msg.on('body', function(stream, info) {
+              console.log('message on body callback');
                 var buffer = '';
                 stream.on('data', function(chunk) {
+                  console.log('stream on data callback');
                   buffer += chunk.toString('UTF-8');
                   parser.write(buffer);
                 });
                 stream.once('end', function() {
+                  console.log('stream on end callback');
                   if (info.which !== 'TEXT') {
                     const seqnum = seqno;
                     const from = Imap.parseHeader(buffer).from[0];
@@ -82,8 +86,10 @@ app.post('/mail', (req, res) => {
                 });
             });
             msg.once('attributes', function(attrs) {
+              console.log('message on attributes callback');
             });
-            msg.once('end', function() {            
+            msg.once('end', function() {  
+              console.log('message on end callback');          
               parser.end()            
             });
         });
