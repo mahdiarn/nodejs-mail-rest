@@ -86,6 +86,7 @@ app.post('/mail', (req, res) => {
             });
         });
         f.once('error', function(err) {
+          console.log('error, '+err);
             return res.send('Error dalam pengambilan surel : ' + err);
         });
         f.once('end', function() {                
