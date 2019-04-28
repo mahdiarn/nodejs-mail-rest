@@ -105,10 +105,12 @@ app.post('/mail', (req, res) => {
   });
         
   imap.once('error', function(err) {
+    console.log('imap on error callback');
       return res.send('Error dalam pengambilan surel : ' + err);
   });
     
   imap.once('end', function() {        
+    console.log('imap on end callback');
     return res.send(message);
   });
     
