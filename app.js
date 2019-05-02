@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const Imap = require('imap');
 const inspect = require('util').inspect;
 const MailParser = require("mailparser").MailParser;
+const simpleParser = require('mailparser').simpleParser;
 const nodemailer = require('nodemailer')
 
 
@@ -43,38 +44,27 @@ app.post('/mail', (req, res) => {
   imap.once('ready', function() {     
   
     openInbox(function(err, box) {
-      console.log('openInbox callback');
         if (err) throw err;
         var f = imap.seq.fetch(seqnum, {
-        bodies: ['HEADER.FIELDS (FROM TO SUBJECT DATE)', 'TEXT'],
+        bodies: ['HEADER', 'TEXT', ''],
         struct: true
         });
         f.on('message', function(msg, seqno) {            
-          console.log('fetch on message callback');
             var prefix = '(#' + seqno + ') ';
-            var parser = new MailParser();
-            parser.on("headers", function(headers) {
-            });
-  
-            parser.on('data', data => {
-              console.log('parser on data callback');
-                if (data.type === 'text') {
-                    const text = data.text;
-                    message.text = text;
-                    console.log(typeof message.text);
-                }
-                console.log('parser on data callback end');
-            });
             msg.on('body', function(stream, info) {
-              console.log('message on body callback');
                 var buffer = '';
                 stream.on('data', function(chunk) {
-                  console.log('stream on data callback');
                   buffer += chunk.toString('UTF-8');
-                  parser.write(buffer);
+                  simpleParser(buffer, (err,mail) => {
+                    if (mail.text) {
+                      if (mail.text.indexOf("----_") === -1) {
+                        message.text = mail.text 
+                      }                          
+                    }                  
+
+                  })
                 });
                 stream.once('end', function() {
-                  console.log('stream on end callback');
                   if (info.which !== 'TEXT') {
                     const seqnum = seqno;
                     const from = Imap.parseHeader(buffer).from[0];
@@ -87,12 +77,9 @@ app.post('/mail', (req, res) => {
                   }
                 });
             });
-            msg.once('attributes', function(attrs) {
-              console.log('message on attributes callback');
+            msg.once('attributes', function(attrs) {              
             });
             msg.once('end', function() {  
-              console.log('message on end callback');          
-              parser.end()            
             });
         });
         f.once('error', function(err) {
@@ -100,20 +87,16 @@ app.post('/mail', (req, res) => {
             return res.send('Error dalam pengambilan surel : ' + err);
         });
         f.once('end', function() {                
-          console.log('fetch on end callback');
             imap.end();          
-            console.log('fetch on end callback end');
         });
     });
   });
         
   imap.once('error', function(err) {
-    console.log('imap on error callback');
       return res.send('Error dalam pengambilan surel : ' + err);
   });
     
   imap.once('end', function() {        
-    console.log('imap on end callback');
     return res.send(message);
   });
     
