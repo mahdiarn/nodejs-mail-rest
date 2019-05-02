@@ -59,6 +59,7 @@ app.post('/mail', (req, res) => {
                     if (mail.text) {
                       if (mail.text.indexOf("----_") === -1) {
                         message.text = mail.text 
+                        return res.send(message);
                       }                          
                     }                  
 
