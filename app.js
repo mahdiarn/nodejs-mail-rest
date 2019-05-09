@@ -110,7 +110,7 @@ app.post('/mails', (req, res) => {
     const imap = new Imap({
         user: email,
         password: password,
-        host: 'imap.gmail.com',
+        host: 'imap.mail.com',
         port: 993,
         tls: true
     });
