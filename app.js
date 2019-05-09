@@ -33,7 +33,7 @@ app.post('/mail', (req, res) => {
   const imap = new Imap({
       user: email,
       password: password,
-      host: 'imap.gmail.com',
+      host: 'imap.mail.com',
       port: 993,
       tls: true
   });
@@ -189,7 +189,7 @@ app.post('/sendmail', (req,res) => {
     const errcode = 0;
 
     let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
+        host: "smtp.mail.com",
         port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
